@@ -1,6 +1,17 @@
 .gradle
 build/
 /src
+.readme.md
+.AUTENTICACAO-SEGURANCA.md
+.CHECKLIST.md
+.EXEMPLOS-REQUISITOS.md
+.INDICE-DOCUMENTACAO.md
+.INICIO-RAPIDO.md
+.POSTMAN-EXEMPLOS.md
+.README.md
+.REFERENCIA-RAPIDA.md
+.RESUMO-AUTENTICACAO.md
+.SUMARIO.md
 .idea
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
