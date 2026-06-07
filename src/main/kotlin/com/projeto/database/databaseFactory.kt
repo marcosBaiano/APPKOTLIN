@@ -1,4 +1,5 @@
-package com.projeto.database
+package org.example.database
+
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
