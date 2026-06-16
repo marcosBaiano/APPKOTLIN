@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APPLogístico - Start Solidarium</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Montserrat e Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0A0B0E;
+            color: #E2E8F0;
+        }
+        h1, h2, h3, h4, .brand-font {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Cores Personalizadas Construtivistas das Referências */
+        .bg-solid-dark { background-color: #121318; }
+        .bg-solid-card { background-color: #171923; }
+        .text-solid-yellow { color: #F2B422; }
+        .bg-solid-yellow { background-color: #F2B422; }
+        .text-solid-red { color: #D7425E; }
+        .bg-solid-red { background-color: #D7425E; }
+        .text-solid-blue { color: #48A8E2; }
+        .bg-solid-blue { background-color: #48A8E2; }
+        .text-solid-green { color: #59ABA7; }
+        .bg-solid-green { background-color: #59ABA7; }
+        
+        /* Efeito Monocromático das fotos das referências */
+        .photo-gray {
+            filter: grayscale(100%) contrast(120%) brightness(90%);
+            transition: all 0.3s ease;
+        }
+        .photo-gray:hover {
+            filter: grayscale(0%) contrast(100%) brightness(100%);
+        }
+
+        /* Animações e Transições */
+        .animate-fadeIn {
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #171923;
+            border-left: 4px solid #F2B422;
+            padding: 16px;
+            border-radius: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 40;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#0A0B0E] flex flex-col overflow-x-hidden">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden">
+        <p class="text-xs font-bold text-white" id="toast-title">Título</p>
+        <p class="text-xs text-gray-300 mt-1" id="toast-message">Mensagem</p>
+    </div>
+
+    <!-- TELA DE AUTENTICAÇÃO E CADASTRO (Milestone 2 - Isolada para evitar overlaps) -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-[#0A0B0E] flex items-center justify-center p-4 overflow-y-auto">
+        <!-- Detalhes geométricos de fundo estilo Construtivista (Inspirado no design) -->
+        <div class="absolute top-0 left-0 w-32 h-32 bg-solid-yellow opacity-10" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+        <div class="absolute bottom-0 right-0 w-48 h-48 bg-solid-red opacity-10" style="clip-path: polygon(100% 0, 100% 100%, 0 100%);"></div>
+        
+        <div class="bg-solid-card max-w-md w-full p-6 md:p-8 border-t-8 border-solid-red relative">
+            <div class="flex items-center space-x-3 mb-6">
+                <!-- Mini Logo Geométrico -->
+                <div class="w-8 h-8 relative">
+                    <div class="absolute inset-0 bg-solid-yellow rounded-tl-full rounded-br-full"></div>
+                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-solid-blue rounded-full"></div>
+                </div>
+                <h1 class="text-lg font-black text-white tracking-tight uppercase">START <span class="text-solid-yellow">SOLIDARIUM</span></h1>
+            </div>
+
+            <!-- Alternador de Abas de Login/Cadastro -->
+            <div class="flex border-b border-[#2D3142] mb-6">
+                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="flex-1 pb-3 text-xs font-black uppercase tracking-wider text-solid-yellow border-b-2 border-solid-yellow">ENTRAR</button>
+                <button onclick="toggleAuthTab('register')" id="btn-tab-register" class="flex-1 pb-3 text-xs font-black uppercase tracking-wider text-gray-500 hover:text-white">CADASTRAR-SE</button>
+            </div>
+
+            <!-- Form de Login -->
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">E-mail Corporativo / Usuário</label>
+                    <input type="email" id="login-email" required placeholder="cliente@empresa.com.br" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Senha</label>
+                        <button type="button" onclick="recoverPassword()" class="text-[10px] text-solid-blue hover:underline">Esqueci a senha</button>
+                    </div>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Entrar como:</label>
+                    <select id="login-role" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                        <option value="CLIENTE">Gerador de Resíduos (Cliente)</option>
+                        <option value="ADMIN">Coordenador de Operações (Admin)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-solid-red hover:bg-[#b03048] text-white p-3 text-xs font-black tracking-widest uppercase transition-all mt-2 rounded-none">
+                    AUTENTICAR COM SEGURANÇA
+                </button>
+            </form>
+
+            <!-- Form de Cadastro -->
+            <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nome Completo / Empresa</label>
+                    <input type="text" id="reg-name" required placeholder="Ex: Marcenaria Bahia S.A." class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">E-mail corporativo</label>
+                    <input type="email" id="reg-email" required placeholder="contato@empresa.com.br" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Definir Senha</label>
+                    <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Perfil Principal</label>
+                    <select id="reg-role" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                        <option value="CLIENTE">Quero destinar EPS / MDF (Cliente)</option>
+                        <option value="ADMIN">Sou da Equipe Solidarium (Admin)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-solid-yellow hover:bg-yellow-500 text-black p-3 text-xs font-black tracking-widest uppercase transition-all mt-2 rounded-none">
+                    CADASTRAR E PROTEGER DADOS (SHA-256)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BLOCKER DE TERMOS E CONDIÇÕES (Milestone 3) -->
+    <div id="terms-blocker" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+        <div class="bg-solid-card max-w-2xl w-full p-6 md:p-8 border-t-4 border-solid-yellow space-y-6 max-h-[90vh] overflow-y-auto rounded-none">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-solid-yellow text-black flex items-center justify-center rounded-none mx-auto mb-3 font-black text-xl">!</div>
+                <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight">Termos de Uso e Política de Privacidade</h2>
+                <p class="text-xs text-gray-400 mt-1">Start Solidarium - Logística Reversa de EPS & MDF na Bahia</p>
+            </div>
+
+            <div class="bg-[#121318] p-4 text-xs text-gray-400 space-y-4 font-mono leading-relaxed h-48 overflow-y-auto border border-[#2D3142]">
+                <p class="text-white font-bold">1. DO PROPÓSITO DA PLATAFORMA</p>
+                <p>O APPLogístico é uma ferramenta de triagem e coordenação para transporte e transformação sustentável de Poliestireno Expandido (EPS/Isopor) e resíduos de MDF na região metropolitana de Salvador. Toda informação de pesagem deve ser verídica.</p>
+                <p class="text-white font-bold">2. DA PRIVACIDADE E DADOS (LGPD)</p>
+                <p>Armazenamos dados cadastrais apenas para otimização de rotas e comprovação de relatórios ambientais. Garantimos que nenhuma informação comercial será vendida ou compartilhada externamente sem autorização.</p>
+                <p class="text-white font-bold">3. DA SEGURANÇA E RESPONSABILIDADES</p>
+                <p>O gerador do descarte garante que os materiais submetidos estão isentos de terra, óleos pesados e substâncias contaminantes biológicas que impeçam a reciclagem química ou mecânica.</p>
+            </div>
+
+            <div class="flex items-start space-x-3 bg-[#1A1D26] p-3 border-l-2 border-solid-blue">
+                <input type="checkbox" id="accept-checkbox" class="mt-1 accent-solid-yellow">
+                <label for="accept-checkbox" class="text-xs text-gray-300">Declaro que li e concordo integralmente com os Termos de Uso e as Políticas de Privacidade da Start Solidarium para destinação correta de resíduos.</label>
+            </div>
+
+            <div class="flex space-x-2">
+                <button onclick="acceptTermsAndProceed()" class="flex-1 bg-solid-yellow hover:bg-yellow-500 text-black p-3 text-xs font-black tracking-widest uppercase transition-all rounded-none">
+                    ACEITAR E ENTRAR NO SISTEMA
+                </button>
+                <button onclick="logout()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 p-3 text-xs font-black tracking-widest uppercase transition-all rounded-none">
+                    RECUSAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL (Totalmente isolada, oculta até validação da sessão) -->
+    <div id="main-app" class="hidden flex-col min-h-screen">
+        
+        <!-- CABEÇALHO DO SISTEMA -->
+        <header class="bg-solid-dark border-b-4 border-[#F2B422] px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+            <div class="flex items-center space-x-4">
+                <!-- Logo Geométrico Construtivista -->
+                <div class="relative w-10 h-10 flex-shrink-0">
+                    <div class="absolute inset-0 bg-solid-yellow rounded-tl-full rounded-br-full"></div>
+                    <div class="absolute top-1/2 left-0 w-5 h-5 bg-solid-blue rounded-tr-full"></div>
+                    <div class="absolute top-0 right-0 w-5 h-5 bg-solid-red rounded-bl-full"></div>
+                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-solid-green rounded-full"></div>
+                </div>
+                <div>
+                    <span class="text-xs tracking-widest text-gray-500 font-bold block uppercase">START SOLIDARIUM</span>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tighter text-white">Logistics <span class="text-solid-yellow">/</span> <span class="text-xs font-normal text-gray-400" id="header-user-role">Dashboard</span></h1>
+                </div>
+            </div>
+
+            <!-- Perfil do Usuário Ativo e Botões de Ação -->
+            <div class="hidden md:flex items-center space-x-6">
+                <div class="flex items-center space-x-2 bg-[#1A1D26] px-3 py-1.5 border-l-2 border-solid-green">
+                    <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+                    <span class="text-xs text-gray-300 font-bold tracking-wider" id="app-env-tag">INTEGRADO</span>
+                </div>
+                
+                <div class="flex items-center space-x-3 border-l border-[#2D3142] pl-6">
+                    <button onclick="openProfileModal()" class="flex items-center space-x-2 focus:outline-none">
+                        <img id="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full border border-solid-yellow photo-gray" alt="Avatar">
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-white leading-none" id="user-display-name">Carregando...</p>
+                            <span class="text-[10px] text-solid-yellow font-semibold" id="user-display-role">Usuário</span>
+                        </div>
+                    </button>
+                    <button onclick="logout()" class="text-gray-400 hover:text-solid-red text-sm pl-2" title="Sair do Sistema">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button onclick="toggleMobileMenu()" class="md:hidden text-white text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+
+        <!-- CORPO OPERACIONAL -->
+        <div class="flex flex-1 relative">
+            
+            <!-- MENU LATERAL -->
+            <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-solid-dark border-r-2 border-[#1E2235] py-6 px-4 flex-shrink-0 transition-all duration-300">
+                <div class="mb-6 p-3 bg-[#1A1D26] border-l-4 border-solid-yellow">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Ambiente</span>
+                    <span class="text-xs text-solid-yellow font-mono font-bold">Backend Kotlin API</span>
+                </div>
+
+                <nav class="space-y-1 flex-1">
+                    <p class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-3 mb-2">Visões de Acesso</p>
+                    
+                    <button onclick="toggleMockRole()" class="w-full flex items-center space-x-3 px-3 py-2 text-xs text-solid-blue hover:bg-[#1A1D26] mb-4 transition-all">
+                        <i class="fa-solid fa-arrows-spin"></i>
+                        <span class="font-bold">Simular outro perfil</span>
+                    </button>
+
+                    <p class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-3 mb-2">Operações</p>
+                    
+                    <a href="#" onclick="switchTab('dashboard')" class="tab-link active flex items-center space-x-3 px-3 py-3 text-sm text-white bg-[#1A1D26] border-l-4 border-solid-yellow font-bold">
+                        <i class="fa-solid fa-chart-line text-solid-yellow w-5"></i>
+                        <span>Painel Geral</span>
+                    </a>
+
+                    <!-- Abas do Cliente -->
+                    <div id="nav-cliente-only" class="space-y-1">
+                        <a href="#" onclick="switchTab('nova-solicitacao')" class="tab-link flex items-center space-x-3 px-3 py-3 text-sm text-gray-400 hover:text-white hover:bg-[#151720] border-l-4 border-transparent transition-all">
+                            <i class="fa-solid fa-circle-plus text-solid-red w-5"></i>
+                            <span>Solicitar Coleta (EPS/MDF)</span>
+                        </a>
+                    </div>
+
+                    <!-- Abas do Admin -->
+                    <div id="nav-admin-only" class="space-y-1">
+                        <a href="#" onclick="switchTab('gerenciar-coletas')" class="tab-link flex items-center space-x-3 px-3 py-3 text-sm text-gray-400 hover:text-white hover:bg-[#151720] border-l-4 border-transparent transition-all">
+                            <i class="fa-solid fa-list-check text-solid-blue w-5"></i>
+                            <span>Fila de Triagem & Coletas</span>
+                        </a>
+                        <a href="#" onclick="switchTab('frota')" class="tab-link flex items-center space-x-3 px-3 py-3 text-sm text-gray-400 hover:text-white hover:bg-[#151720] border-l-4 border-transparent transition-all">
+                            <i class="fa-solid fa-route text-solid-green w-5"></i>
+                            <span>Rotas de Reciclagem</span>
+                        </a>
+                    </div>
+
+                    <p class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-3 pt-6 mb-2">Mural da Comunidade</p>
+                    <a href="#" onclick="switchTab('mural-depoimentos')" class="tab-link flex items-center space-x-3 px-3 py-3 text-sm text-gray-400 hover:text-white hover:bg-[#151720] border-l-4 border-transparent transition-all">
+                        <i class="fa-solid fa-comments text-solid-yellow w-5"></i>
+                        <span>Depoimentos & Impacto</span>
+                    </a>
+
+                    <p class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-3 pt-6 mb-2">Simulador de Aplicativo</p>
+                    <a href="#" onclick="openSimulatorModal()" class="flex items-center space-x-3 px-3 py-2 text-xs text-gray-400 hover:text-white transition-all">
+                        <i class="fa-solid fa-mobile-screen-button text-gray-500 w-5"></i>
+                        <span>Simular Câmera & APK</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- MENU MOBILE -->
+            <div id="mobile-menu" class="hidden fixed inset-0 z-30 bg-black/80 backdrop-blur-sm md:hidden" onclick="toggleMobileMenu()">
+                <div class="w-3/4 max-w-sm h-full bg-solid-dark p-6 flex flex-col justify-between animate-fadeIn" onclick="event.stopPropagation()">
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-solid-yellow font-black">MENU MOBILE</span>
+                            <button onclick="toggleMobileMenu()" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <nav class="space-y-2">
+                            <a href="#" onclick="switchTab('dashboard'); toggleMobileMenu()" class="block px-4 py-3 bg-[#1A1D26] text-white font-bold border-l-4 border-solid-yellow">Painel Geral</a>
+                            <div class="cliente-only">
+                                <a href="#" onclick="switchTab('nova-solicitacao'); toggleMobileMenu()" class="block px-4 py-3 text-gray-400 hover:text-white border-l-4 border-transparent">Solicitar Coleta</a>
+                            </div>
+                            <div class="admin-only">
+                                <a href="#" onclick="switchTab('gerenciar-coletas'); toggleMobileMenu()" class="block px-4 py-3 text-gray-400 hover:text-white border-l-4 border-transparent">Fila de Triagem</a>
+                                <a href="#" onclick="switchTab('frota'); toggleMobileMenu()" class="block px-4 py-3 text-gray-400 hover:text-white border-l-4 border-transparent">Rotas de Reciclagem</a>
+                            </div>
+                            <a href="#" onclick="switchTab('mural-depoimentos'); toggleMobileMenu()" class="block px-4 py-3 text-gray-400 hover:text-white border-l-4 border-transparent">Depoimentos & Mural</a>
+                        </nav>
+                    </div>
+                    <div class="p-4 bg-[#1A1D26] text-xs">
+                        <button onclick="logout()" class="w-full bg-solid-red text-white py-2 font-black uppercase text-center block rounded-none">SAIR</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO PRINCIPAL -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+
+                <!-- TAB 1: PAINEL GERAL (Milestones 4 e 6) -->
+                <section id="tab-dashboard" class="space-y-8 animate-fadeIn">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-[#1E2235] pb-6">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Status do Impacto <span class="text-solid-yellow">Ambiental</span></h2>
+                            <p class="text-xs md:text-sm text-gray-400 mt-1">Acompanhe as toneladas de Isopor e MDF destinadas por você e pela comunidade da Bahia.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="exportData('csv')" class="bg-[#1A1D26] hover:bg-[#2D3142] text-white px-3 py-2 text-xs font-bold border border-[#2D3142] flex items-center space-x-2">
+                                <i class="fa-solid fa-file-csv text-solid-green"></i>
+                                <span>Exportar CSV</span>
+                            </button>
+                            <button onclick="exportData('json')" class="bg-[#1A1D26] hover:bg-[#2D3142] text-white px-3 py-2 text-xs font-bold border border-[#2D3142] flex items-center space-x-2">
+                                <i class="fa-solid fa-code text-solid-blue"></i>
+                                <span>Exportar JSON</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CARDS DE METAS E VOLUMES -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-solid-card p-6 border-l-8 border-solid-yellow flex flex-col justify-between h-36">
+                            <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Seu Total Descartado</span>
+                            <span class="text-3xl font-black text-white" id="dash-user-total">0 kg</span>
+                            <span class="text-[10px] text-solid-yellow font-mono">EPS & MDF</span>
+                        </div>
+                        <div class="bg-solid-card p-6 border-l-8 border-solid-green flex flex-col justify-between h-36">
+                            <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">CO₂ Evitado (Sua Conta)</span>
+                            <span class="text-3xl font-black text-white" id="dash-user-co2">0 Ton</span>
+                            <span class="text-[10px] text-solid-green font-mono">Calculado automaticamente</span>
+                        </div>
+                        <div class="bg-solid-card p-6 border-l-8 border-solid-blue flex flex-col justify-between h-36">
+                            <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Total Geral do APP</span>
+                            <span class="text-3xl font-black text-white" id="dash-app-total">0 kg</span>
+                            <span class="text-[10px] text-solid-blue font-mono">Toda comunidade baiana</span>
+                        </div>
+                        <div class="bg-solid-card p-6 border-l-8 border-solid-red flex flex-col justify-between h-36">
+                            <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Solicitações Ativas</span>
+                            <span class="text-3xl font-black text-white" id="dash-app-actives">0</span>
+                            <span class="text-[10px] text-solid-red font-mono">Aguardando coleta</span>
+                        </div>
+                    </div>
+
+                    <!-- HISTÓRICO DE MINHAS SOLICITAÇÕES COM FILTROS E BUSCA (Milestone 6) -->
+                    <div class="bg-solid-card p-6 space-y-6">
+                        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                            <div>
+                                <h3 class="text-lg font-black text-white uppercase">Acompanhar Minhas Cargas</h3>
+                                <p class="text-xs text-gray-400">Pesquise, filtre e acompanhe o andamento das suas ordens de coleta.</p>
+                            </div>
+                            
+                            <!-- Painel de Busca e Filtros -->
+                            <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                                <input type="text" id="search-term" oninput="filterAndRenderTable()" placeholder="Buscar origem, região..." class="bg-[#121318] border border-[#2D3142] px-3 py-2 text-xs text-white focus:outline-none focus:border-solid-yellow flex-1 md:flex-initial rounded-none">
+                                
+                                <select id="filter-material" onchange="filterAndRenderTable()" class="bg-[#121318] border border-[#2D3142] px-3 py-2 text-xs text-white focus:outline-none rounded-none">
+                                    <option value="TODOS">Todos Materiais</option>
+                                    <option value="EPS Isopor">Somente EPS</option>
+                                    <option value="MDF / Resíduos">Somente MDF</option>
+                                    <option value="Misto">Mistos</option>
+                                </select>
+
+                                <select id="filter-status" onchange="filterAndRenderTable()" class="bg-[#121318] border border-[#2D3142] px-3 py-2 text-xs text-white focus:outline-none rounded-none">
+                                    <option value="TODOS">Todos Status</option>
+                                    <option value="Pendente">Pendentes</option>
+                                    <option value="Em Trânsito">Em Trânsito</option>
+                                    <option value="Finalizada">Concluídos</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tabela de Dados -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-[#2D3142] text-gray-400 uppercase font-mono">
+                                        <th class="py-3 px-4">Código OS</th>
+                                        <th class="py-3 px-4">Local/Origem</th>
+                                        <th class="py-3 px-4">Material</th>
+                                        <th class="py-3 px-4 cursor-pointer hover:text-white" onclick="toggleSortOrder('peso')">Peso Est. <i class="fa-solid fa-sort"></i></th>
+                                        <th class="py-3 px-4">Foto Anexada</th>
+                                        <th class="py-3 px-4">Status</th>
+                                        <th class="py-3 px-4 text-right">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-coletas-table" class="divide-y divide-[#1E2235]">
+                                    <!-- Preenchido dinamicamente via JS -->
+                                </tbody>
+                                <tfoot class="bg-[#1A1D26] font-bold text-white">
+                                    <tr>
+                                        <td class="py-3 px-4">Total Filtrado:</td>
+                                        <td class="py-3 px-4" id="footer-count">0 itens</td>
+                                        <td class="py-3 px-4"></td>
+                                        <td class="py-3 px-4 text-solid-yellow" id="footer-weight-sum">0 kg</td>
+                                        <td class="py-3 px-4" colspan="3"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: SOLICITAR COLETA (CLIENTE - Milestone 4 com Upload de Fotos) -->
+                <section id="tab-nova-solicitacao" class="hidden space-y-8 animate-fadeIn">
+                    <div class="border-b border-[#1E2235] pb-6">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Solicitar Descarte de <span class="text-solid-red">EPS/MDF</span></h2>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1">Gere uma nova solicitação de coleta. Nossos transportadores parceiros farão a coleta programada.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Form -->
+                        <form onsubmit="handleNewSolicitacao(event)" class="lg:col-span-7 bg-solid-card p-6 space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Ponto de Coleta (Empresa/Local)</label>
+                                    <input type="text" id="sol-origem" required placeholder="Ex: Marcenaria Salvador Norte" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Contato local / Telefone</label>
+                                    <input type="text" id="sol-contato" required placeholder="Ex: Falar com Gilberto - (71) 98888-0000" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Tipo de Resíduo</label>
+                                    <select id="sol-material" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                                        <option value="EPS Isopor">EPS Isopor (Placas/Moldes)</option>
+                                        <option value="MDF / Resíduos">MDF (Sobras de Corte)</option>
+                                        <option value="Misto">EPS + MDF + Plásticos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Peso Estimado (KG)</label>
+                                    <input type="number" id="sol-peso" required placeholder="Ex: 150" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Região Metropolitana</label>
+                                    <select id="sol-regiao" class="w-full bg-[#1A1D26] border border-[#2D3142] p-3 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                                        <option value="Salvador">Salvador - Centro/Orla</option>
+                                        <option value="Lauro de Freitas">Lauro de Freitas</option>
+                                        <option value="Camaçari">Camaçari (Polo)</option>
+                                        <option value="Simões Filho">Simões Filho</option>
+                                        <option value="Feira de Santana">Feira de Santana</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Upload de Imagem Simulando Câmera/Arquivos do Dispositivo -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Foto das Condições do Material (Obrigatório para triagem)</label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-[#2D3142] border-dashed cursor-pointer bg-[#1A1D26] hover:bg-[#151720] transition-all">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                            <i class="fa-solid fa-camera text-2xl text-solid-yellow mb-2"></i>
+                                            <p class="text-xs text-gray-300 font-bold">Clique para tirar foto ou fazer upload</p>
+                                            <p class="text-[10px] text-gray-500 mt-1" id="file-name-indicator">Resíduos limpos e secos apenas</p>
+                                        </div>
+                                        <input type="file" id="sol-image" accept="image/*" onchange="handleFileSelected(event)" class="hidden">
+                                    </label>
+                                </div>
+                                <!-- Preview da Imagem Selecionada -->
+                                <div id="image-preview-container" class="hidden mt-4">
+                                    <span class="text-[10px] text-gray-400 uppercase font-mono block mb-1">Visualização do Anexo:</span>
+                                    <img id="image-preview" src="#" alt="Preview" class="max-h-40 rounded border border-solid-yellow">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-solid-red hover:bg-[#b03048] text-white p-3 text-xs font-black tracking-widest uppercase transition-all mt-2 rounded-none">
+                                ENVIAR PEDIDO DE COLETA
+                            </button>
+                        </form>
+
+                        <!-- Cartaz de Instruções de Triagem -->
+                        <div class="lg:col-span-5 bg-solid-card p-6 border border-solid-yellow flex flex-col justify-between">
+                            <div>
+                                <span class="text-[10px] font-bold text-solid-yellow uppercase tracking-widest">Procedimento Técnico</span>
+                                <h3 class="text-xl font-black text-white mt-2 mb-4 leading-tight">Como preparar seu descarte</h3>
+                                <ul class="space-y-4 text-xs text-gray-300">
+                                    <li class="flex items-start space-x-3">
+                                        <span class="bg-solid-yellow text-black font-black text-[9px] px-2 py-0.5 mt-0.5">01</span>
+                                        <span>Remova fitas adesivas, etiquetas de papel ou plástico que estejam presas ao Isopor.</span>
+                                    </li>
+                                    <li class="flex items-start space-x-3">
+                                        <span class="bg-solid-blue text-white font-black text-[9px] px-2 py-0.5 mt-0.5">02</span>
+                                        <span>Assegure que o material está seco. Resíduos úmidos aumentam o peso artificialmente e dificultam o processamento.</span>
+                                    </li>
+                                    <li class="flex items-start space-x-3">
+                                        <span class="bg-solid-green text-black font-black text-[9px] px-2 py-0.5 mt-0.5">03</span>
+                                        <span>Armazene em local protegido até a chegada do caminhão com as gaiolas aramadas exclusivas.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: GERENCIAR COLETAS (ADMIN) -->
+                <section id="tab-gerenciar-coletas" class="hidden space-y-8 animate-fadeIn">
+                    <div class="border-b border-[#1E2235] pb-6">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Fila Geral de <span class="text-solid-blue">Triagem Operacional</span></h2>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1">Aprovação de descartes, pesagem de balança de usina e liberação de caminhões coletores.</p>
+                    </div>
+
+                    <div class="bg-solid-card p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-[#2D3142] text-gray-400 uppercase font-mono">
+                                        <th class="py-3 px-4">Código</th>
+                                        <th class="py-3 px-4">Gerador / Origem</th>
+                                        <th class="py-3 px-4">Material</th>
+                                        <th class="py-3 px-4">Peso Declarado</th>
+                                        <th class="py-3 px-4">Foto Triagem</th>
+                                        <th class="py-3 px-4">Status Atual</th>
+                                        <th class="py-3 px-4 text-right">Controles Administrativos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-coletas-table" class="divide-y divide-[#1E2235]">
+                                    <!-- Renderizado via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: ROTAS E FROTA (ADMIN) -->
+                <section id="tab-frota" class="hidden space-y-8 animate-fadeIn">
+                    <div class="border-b border-[#1E2235] pb-6">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Painel de <span class="text-solid-green">Logística e Despacho</span></h2>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1">Direcione os motoristas cadastrados com base no acúmulo de peso nas microrregiões.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-solid-card p-6">
+                            <span class="text-xs font-mono text-solid-yellow block mb-2">ROTA COLETORA A (SALVADOR/RMS)</span>
+                            <h3 class="text-lg font-black text-white">Caminhão 01 - Gaiolas de Alta Capacidade</h3>
+                            <p class="text-xs text-gray-400 mt-2 leading-relaxed">Focado em resíduos volumosos de Isopor (EPS) em shoppings e centros de distribuição.</p>
+                            <div class="mt-4 p-3 bg-black text-xs font-mono text-gray-300">
+                                <strong>Motorista:</strong> Agenor Silva<br>
+                                <strong>Carga Atual:</strong> 1.150 kg (Isopor)<br>
+                                <strong>Status:</strong> Em rota de retorno para Usina
+                            </div>
+                        </div>
+                        <div class="bg-solid-card p-6">
+                            <span class="text-xs font-mono text-solid-blue block mb-2">ROTA INDUSTRIAL B (SIMÕES FILHO/CAMAÇARI)</span>
+                            <h3 class="text-lg font-black text-white">Caminhão 02 - Caçamba Sólida MDF</h3>
+                            <p class="text-xs text-gray-400 mt-2 leading-relaxed">Focado no recolhimento de resíduos pesados e sobras de marcenarias de MDF.</p>
+                            <div class="mt-4 p-3 bg-black text-xs font-mono text-gray-300">
+                                <strong>Motorista:</strong> Cláudio Ferreira<br>
+                                <strong>Carga Atual:</strong> 2.450 kg (MDF)<br>
+                                <strong>Status:</strong> Aguardando pesagem de balança
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: MURAL DE DEPOIMENTOS (Milestone 4) -->
+                <section id="tab-mural-depoimentos" class="hidden space-y-8 animate-fadeIn">
+                    <div class="border-b border-[#1E2235] pb-6">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Depoimentos & <span class="text-solid-yellow">Impacto Social</span></h2>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1">Compartilhe e comemore as conquistas sustentáveis da destinação ambientalmente correta.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Enviar Depoimento -->
+                        <form onsubmit="handleNewDepoimento(event)" class="lg:col-span-4 bg-solid-card p-6 space-y-4 h-fit">
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider">Deixar meu depoimento</h3>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Título/Frase Curta</label>
+                                <input type="text" id="dep-title" required placeholder="Ex: Marcenaria sustentável!" class="w-full bg-[#1A1D26] border border-[#2D3142] p-2 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Sua mensagem / Conquista</label>
+                                <textarea id="dep-msg" required rows="4" placeholder="Ex: Conseguimos reciclar mais de 500kg de Isopor este mês e evitamos o descarte inadequado!" class="w-full bg-[#1A1D26] border border-[#2D3142] p-2 text-xs text-white focus:outline-none focus:border-solid-yellow rounded-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-solid-yellow text-black p-3 text-xs font-black tracking-widest uppercase transition-all rounded-none">
+                                PUBLICAR MURAL
+                            </button>
+                        </form>
+
+                        <!-- Feed de Depoimentos -->
+                        <div class="lg:col-span-8 space-y-4" id="mural-container">
+                            <!-- Gerado dinamicamente -->
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL DE EDIÇÃO DE PERFIL (Milestone 4) -->
+    <div id="profile-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-solid-card max-w-md w-full p-6 border-t-4 border-solid-yellow space-y-4 animate-fadeIn rounded-none">
+            <div class="flex justify-between items-center border-b border-[#2D3142] pb-3">
+                <h3 class="text-sm font-black text-white uppercase">Editar Perfil de Usuário</h3>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="saveUserProfile(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nome de Exibição / Empresa</label>
+                    <input type="text" id="prof-name" required class="w-full bg-[#1A1D26] border border-[#2D3142] p-2 text-xs text-white focus:outline-none rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">E-mail corporativo</label>
+                    <input type="email" id="prof-email" required class="w-full bg-[#1A1D26] border border-[#2D3142] p-2 text-xs text-white focus:outline-none rounded-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">URL da Imagem do Avatar</label>
+                    <input type="text" id="prof-avatar" class="w-full bg-[#1A1D26] border border-[#2D3142] p-2 text-xs text-white focus:outline-none rounded-none">
+                </div>
+                <button type="submit" class="w-full bg-solid-yellow text-black p-2 text-xs font-black uppercase rounded-none">
+                    SALVAR ALTERAÇÕES
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DO SIMULADOR DE APK / PERMISSÕES (Milestone 8) -->
+    <div id="simulator-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+        <div class="bg-solid-card max-w-lg w-full p-6 border-t-4 border-solid-blue space-y-4 animate-fadeIn rounded-none">
+            <div class="flex justify-between items-center border-b border-[#2D3142] pb-2">
+                <h3 class="text-sm font-black text-white uppercase"><i class="fa-solid fa-mobile-screen"></i> Simulador Mobile APK/IPA</h3>
+                <button onclick="closeSimulatorModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <p class="text-xs text-gray-300">
+                O aplicativo final gerado para Android (.apk) e iOS (.ipa) possui acesso nativo aos recursos abaixo. Você pode testar e aprovar a simulação das permissões:
+            </p>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="simulatePermission('câmera')" class="bg-[#1A1D26] hover:bg-[#2D3142] p-3 text-left border border-[#2D3142]">
+                    <span class="text-xs font-bold text-white block"><i class="fa-solid fa-camera text-solid-yellow mr-2"></i> Câmera</span>
+                    <span class="text-[9px] text-gray-500">Tirar foto para triagem técnica</span>
+                </button>
+                <button onclick="simulatePermission('localização')" class="bg-[#1A1D26] hover:bg-[#2D3142] p-3 text-left border border-[#2D3142]">
+                    <span class="text-xs font-bold text-white block"><i class="fa-solid fa-location-dot text-solid-green mr-2"></i> Localização</span>
+                    <span class="text-[9px] text-gray-500">Cálculo de rota via GPS</span>
+                </button>
+                <button onclick="simulatePermission('notificações')" class="bg-[#1A1D26] hover:bg-[#2D3142] p-3 text-left border border-[#2D3142]">
+                    <span class="text-xs font-bold text-white block"><i class="fa-solid fa-bell text-solid-red mr-2"></i> Notificações</span>
+                    <span class="text-[9px] text-gray-500">Alertas de caminhão chegando</span>
+                </button>
+                <button onclick="simulatePermission('arquivos')" class="bg-[#1A1D26] hover:bg-[#2D3142] p-3 text-left border border-[#2D3142]">
+                    <span class="text-xs font-bold text-white block"><i class="fa-solid fa-file-pdf text-solid-blue mr-2"></i> Armazenamento</span>
+                    <span class="text-[9px] text-gray-500">Exportar relatórios em PDF</span>
+                </button>
+            </div>
+
+            <!-- Checklist de Metadados de Publicação nas Lojas -->
+            <div class="bg-[#121318] p-4 text-xs space-y-2 border border-[#2D3142]">
+                <span class="font-bold text-solid-yellow block uppercase text-[10px]"><i class="fa-brands fa-google-play"></i> Checklist de Lançamento Google Play / Apple Store</span>
+                <label class="flex items-center space-x-2 text-[10px] text-gray-400">
+                    <input type="checkbox" checked disabled class="accent-solid-yellow"> <span>Conta de desenvolvedor ativa</span>
+                </label>
+                <label class="flex items-center space-x-2 text-[10px] text-gray-400">
+                    <input type="checkbox" checked disabled class="accent-solid-yellow"> <span>Assinatura Digital Keystore gerada</span>
+                </label>
+                <label class="flex items-center space-x-2 text-[10px] text-gray-400">
+                    <input type="checkbox" checked disabled class="accent-solid-yellow"> <span>Políticas de Privacidade hospedadas</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DIÁLOGO PERSONALIZADO (Substituto para alert() - Sem travar o navegador) -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
+        <div class="bg-solid-card max-w-sm w-full p-6 border-2 border-solid-yellow space-y-4 animate-fadeIn">
+            <div class="flex items-center space-x-2 text-solid-yellow">
+                <i class="fa-solid fa-circle-info text-lg"></i>
+                <h4 class="text-sm font-black text-white uppercase tracking-wider" id="custom-alert-title">Aviso do Sistema</h4>
+            </div>
+            <p class="text-xs text-gray-300 leading-relaxed font-mono" id="custom-alert-message">Detalhes do alerta geométrico.</p>
+            <div class="flex justify-end">
+                <button onclick="closeCustomAlert()" class="bg-solid-yellow hover:bg-yellow-500 text-black px-4 py-2 text-xs font-black uppercase tracking-widest rounded-none">
+                    ENTENDIDO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORTAR SCRIPT JAVASCRIPT ADAPTADO -->
+    <script src="/js/app.js"></script>
+
+</body>
+</html>

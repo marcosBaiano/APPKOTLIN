@@ -1,0 +1,323 @@
+================================================================================
+INTEGRAÇÃO FRONTEND-BACKEND KOTLIN - RELATÓRIO FINAL
+================================================================================
+Data: 2026-06-16
+Projeto: APPLogístico - Start Solidarium
+
+================================================================================
+1. ESTRUTURA FINAL DE PASTAS
+================================================================================
+
+src/main/kotlin/
+├── Main.kt (ALTERADO)
+├── Application.kt
+├── Database.kt
+├── config/
+│   ├── DatabaseConfig.kt (ALTERADO)
+│   └── JwtConfig.kt
+├── models/
+│   ├── UserEntity.kt
+│   ├── PostEntity.kt
+│   ├── CommentEntity.kt
+│   ├── NotificationEntity.kt
+│   ├── ColletaEntity.kt (NOVO)
+│   └── DepoimentoEntity.kt (NOVO)
+├── repository/
+│   ├── UserRepository.kt
+│   ├── PostRepository.kt
+│   ├── CommentRepository.kt
+│   ├── NotificationRepository.kt
+│   ├── ColletaRepository.kt (NOVO)
+│   └── DepoimentoRepository.kt (NOVO)
+├── service/
+│   ├── UserService.kt
+│   ├── PostService.kt
+│   ├── CommentService.kt
+│   ├── NotificationService.kt
+│   ├── ColletaService.kt (NOVO)
+│   └── DepoimentoService.kt (NOVO)
+├── routes/
+│   ├── UserRoutes.kt
+│   ├── PostRoutes.kt
+│   ├── CommentRoutes.kt
+│   ├── NotificationRoutes.kt
+│   ├── ColletaRoutes.kt (NOVO)
+│   └── DepoimentoRoutes.kt (NOVO)
+└── tables/
+    ├── UsersTable.kt
+    ├── PostsTable.kt
+    ├── CommentsTable.kt
+    ├── NotificationsTable.kt
+    ├── ColletasTable.kt (NOVO)
+    └── DepoimentosTable.kt (NOVO)
+
+src/main/resources/
+├── static/ (NOVA PASTA)
+│   ├── index.html (NOVO)
+│   └── js/
+│       └── app.js (NOVO)
+└── logback.xml
+
+================================================================================
+2. ARQUIVOS CRIADOS
+================================================================================
+
+✓ src/main/kotlin/models/ColletaEntity.kt
+  - Entidade para solicitações de coleta
+  - DTOs: CreateColletaRequest, UpdateColletaStatusRequest
+  
+✓ src/main/kotlin/models/DepoimentoEntity.kt
+  - Entidade para depoimentos
+  - DTO: CreateDepoimentoRequest
+
+✓ src/main/kotlin/tables/ColletasTable.kt
+  - Tabela no banco: id, userId, material, peso, local, origem, contato, status, fotoBase64, createdAt, updatedAt
+
+✓ src/main/kotlin/tables/DepoimentosTable.kt
+  - Tabela no banco: id, userId, titulo, mensagem, createdAt
+
+✓ src/main/kotlin/repository/ColletaRepository.kt
+  - Operações CRUD completas
+  - Métodos: createColleta, getColletaById, getAllColetas, getColetasByUserId, getColetasByStatus, updateStatus, deleteColleta
+
+✓ src/main/kotlin/repository/DepoimentoRepository.kt
+  - Operações CRUD completas
+  - Métodos: createDepoimento, getDepoimentoById, getAllDepoimentos, getDepoimentosByUserId, deleteDepoimento
+
+✓ src/main/kotlin/service/ColletaService.kt
+  - Lógica de negócio
+  - Método de estatísticas: getStatistics()
+
+✓ src/main/kotlin/service/DepoimentoService.kt
+  - Lógica de negócio
+
+✓ src/main/kotlin/routes/ColletaRoutes.kt
+  - 8 endpoints RESTful
+  - Autenticação JWT integrada
+
+✓ src/main/kotlin/routes/DepoimentoRoutes.kt
+  - 5 endpoints RESTful
+  - Autenticação JWT integrada
+
+✓ src/main/resources/static/index.html
+  - Interface completa do usuário
+  - Integração com API
+  - Design construtivista preservado
+  - Responsivo (mobile/desktop)
+
+✓ src/main/resources/static/js/app.js
+  - ~600 linhas de JavaScript
+  - Integração completa com API Kotlin
+  - Autenticação JWT
+  - Gerenciamento de estado
+  - Funções para todas as operações
+
+================================================================================
+3. ARQUIVOS ALTERADOS
+================================================================================
+
+✓ src/main/kotlin/Main.kt
+  - Adicionado CORS
+  - Adicionado servir arquivos estáticos
+  - Novas rotas registradas (coletas, depoimentos)
+  - Inicialização de novos serviços
+
+✓ src/main/kotlin/config/DatabaseConfig.kt
+  - Adicionadas novas tabelas à criação automática
+  - ColletasTable e DepoimentosTable
+
+================================================================================
+4. ENDPOINTS DA API
+================================================================================
+
+BASE: http://localhost:8080/api
+
+COLETAS (com autenticação JWT onde indicado):
+├── GET    /coletas                           → Listar todas
+├── GET    /coletas/{id}                      → Detalhes
+├── GET    /coletas/status/{status}           → Por status
+├── GET    /coletas/stats                     → Estatísticas
+├── GET    /coletas/user                      [AUTH] → Do usuário
+├── POST   /coletas                           [AUTH] → Criar
+├── PUT    /coletas/{id}/status               [AUTH] → Atualizar status
+└── DELETE /coletas/{id}                      [AUTH] → Deletar
+
+DEPOIMENTOS:
+├── GET    /depoimentos                       → Listar todos
+├── GET    /depoimentos/{id}                  → Detalhes
+├── GET    /depoimentos/user                  [AUTH] → Do usuário
+├── POST   /depoimentos                       [AUTH] → Criar
+└── DELETE /depoimentos/{id}                  [AUTH] → Deletar
+
+================================================================================
+5. AJUSTES REALIZADOS
+================================================================================
+
+✅ Autenticação
+   - JWT integrado no frontend
+   - Token armazenado em localStorage
+   - Header Authorization: Bearer {token}
+
+✅ CORS
+   - Habilitado para aceitar requisições cross-origin
+   - Todos os métodos HTTP suportados
+
+✅ Arquivos Estáticos
+   - Frontend servido em /
+   - Path base: /api para APIs
+
+✅ Integração Banco de Dados
+   - Tabelas criadas automaticamente
+   - Migrations via SchemaUtils.create()
+
+✅ Design e Layout
+   - Identidade visual mantida (cores, fontes, estilo)
+   - Responsividade preservada
+   - Animações e transições intactas
+
+✅ Funcionalidades Implementadas
+   - Login/Registro com API
+   - Dashboard com dados reais
+   - Criar/editar/deletar coletas
+   - Admin: gerenciar fila de coletas
+   - Depoimentos sincronizados
+   - Filtros e buscas
+   - Exportação CSV/JSON
+
+================================================================================
+6. INSTRUÇÕES DE EXECUÇÃO
+================================================================================
+
+PASSO 1: Garantir que MySQL está rodando
+  $ mysql -u root -p edneiaSQL
+  > CREATE DATABASE IF NOT EXISTS appkotlin;
+
+PASSO 2: Instalar Java (se não tiver)
+  - Download: https://www.oracle.com/java/technologies/downloads/
+  - Adicionar ao PATH
+
+PASSO 3: Compilar o projeto
+  $ cd c:\www\APPKOTLIN
+  $ .\gradlew build
+
+PASSO 4: Executar o servidor
+  $ .\gradlew run
+  
+  OU
+  
+  $ java -jar build/libs/APPKOTLIN-1.0-SNAPSHOT.jar
+
+PASSO 5: Acessar o frontend
+  - Abrir navegador: http://localhost:8080
+  - Fazer login com credenciais
+
+================================================================================
+7. CREDENCIAIS DE TESTE
+================================================================================
+
+Para testar, use:
+- Email: teste@empresa.com.br
+- Senha: 123456
+- Perfil: CLIENTE ou ADMIN
+
+Ou registre um novo usuário diretamente na aplicação.
+
+================================================================================
+8. ENDPOINTS PÚBLICOS
+================================================================================
+
+Health Check:
+  GET http://localhost:8080/api/health
+
+Listar Coletas (sem autenticação):
+  GET http://localhost:8080/api/coletas
+
+Listar Depoimentos (sem autenticação):
+  GET http://localhost:8080/api/depoimentos
+
+================================================================================
+9. FLUXO DE DADOS
+================================================================================
+
+CLIENTE:
+1. Acessa http://localhost:8080
+2. Faz login (credenciais salvas localmente e JWT obtido)
+3. Vê dashboard com estatísticas
+4. Cria nova solicitação de coleta
+5. Upload de foto em base64
+6. Solicitação enviada via POST /api/coletas (com token JWT)
+7. Recebe ID da coleta criada
+8. Acompanha status em tempo real
+
+ADMIN:
+1. Faz login como ADMIN
+2. Vê fila geral de coletas (GET /api/coletas)
+3. Pode atualizar status de coletas (PUT /api/coletas/{id}/status)
+4. Transitando: Pendente → Em Trânsito → Finalizada
+5. Vê rotas e despachos
+
+DEPOIMENTOS:
+1. Usuário cria depoimento (POST /api/depoimentos)
+2. Armazenado no banco com userId
+3. Listado em tempo real para todos (GET /api/depoimentos)
+4. Pode ser deletado pelo autor
+
+================================================================================
+10. PROBLEMAS CONHECIDOS E SOLUÇÕES
+================================================================================
+
+❌ JAVA_HOME não configurado
+   ✅ Solução: Instalar Java e adicionar ao PATH do Windows
+
+❌ Porta 8080 já em uso
+   ✅ Solução: Mudar em Main.kt ou encerrar processo
+   
+❌ Banco de dados não conecta
+   ✅ Solução: Verificar MySQL rodando, credenciais em DatabaseConfig.kt
+
+❌ CORS error no frontend
+   ✅ Solução: Verificar se CORS plugin está instalado ou usar URL correta
+
+❌ Token JWT expirado
+   ✅ Solução: Fazer login novamente (token renovado)
+
+================================================================================
+11. PRÓXIMAS MELHORIAS
+================================================================================
+
+□ Autenticação OAuth2
+□ WebSockets para atualizações em tempo real
+□ Paginação na API
+□ Filtros avançados
+□ Relatórios em PDF
+□ Notificações por email
+□ Busca full-text
+□ Cache distribuído
+
+================================================================================
+12. RESUMO TÉCNICO
+================================================================================
+
+Backend:
+- Framework: Ktor 2.3.12
+- Banco: MySQL 8.0
+- ORM: Exposed 0.50.0
+- Autenticação: JWT (Auth0)
+- Linguagem: Kotlin 2.0
+
+Frontend:
+- HTML5/CSS3/JavaScript
+- Tailwind CSS
+- FontAwesome icons
+- Responsive Design
+- Sem frameworks (vanilla JS)
+
+Integração:
+- API RESTful
+- CORS habilitado
+- Autenticação JWT
+- Serialização JSON
+
+================================================================================
+FIM DO RELATÓRIO
+================================================================================

@@ -58,7 +58,14 @@ object DatabaseConfig {
     private fun createTables() {
         try {
             transaction {
-                SchemaUtils.create(UsersTable, PostsTable, CommentsTable, NotificationsTable)
+                SchemaUtils.create(
+                    UsersTable,
+                    PostsTable,
+                    CommentsTable,
+                    NotificationsTable,
+                    ColletasTable,
+                    DepoimentosTable
+                )
                 println("✅ Tabelas criadas/verificadas com sucesso!")
             }
         } catch (e: Exception) {

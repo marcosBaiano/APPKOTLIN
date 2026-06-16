@@ -257,4 +257,3 @@ APPKOTLIN/
 ---
 
 Desenvolvido com ❤️ em Kotlin e Ktor
-

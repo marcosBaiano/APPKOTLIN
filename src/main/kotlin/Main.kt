@@ -10,6 +10,9 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.response.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.staticfiles.*
+import java.io.File
 
 import org.example.config.DatabaseConfig
 import org.example.config.JwtConfig
@@ -40,6 +43,19 @@ fun main() {
  * Configuração do servidor Ktor
  */
 fun Application.configureServer() {
+    // Configuração de CORS para aceitar requisições do frontend
+    install(CORS) {
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Options)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
+        allowCredentials = true
+        anyHost()
+    }
+
     // Configuração de JSON
     install(ContentNegotiation) {
         json()
@@ -75,16 +91,25 @@ fun Application.configureServer() {
     val postRepository = PostRepository
     val commentRepository = CommentRepository
     val notificationRepository = NotificationRepository
+    val colletaRepository = ColletaRepository
+    val depoimentoRepository = DepoimentoRepository
 
     val userService = UserService(userRepository)
     val postService = PostService(postRepository)
     val commentService = CommentService(commentRepository)
     val notificationService = NotificationService(notificationRepository)
+    val colletaService = ColletaService(colletaRepository)
+    val depoimentoService = DepoimentoService(depoimentoRepository)
 
     // Configurar rotas
     routing {
-        // Health check
-        get("/health") {
+        // Servir arquivos estáticos (HTML, CSS, JS)
+        staticResources("/", "static") {
+            default("index.html")
+        }
+
+        // Health check da API
+        get("/api/health") {
             call.respond(
                 ApiResponse(
                     success = true,
@@ -93,13 +118,17 @@ fun Application.configureServer() {
             )
         }
 
-        // Incluir todas as rotas
+        // Incluir todas as rotas da API
         userRoutes(userService)
         postRoutes(postService)
         commentRoutes(commentService)
         notificationRoutes(notificationService)
+        colletaRoutes(colletaService, userService)
+        depoimentoRoutes(depoimentoService, userService)
     }
 
     println("✅ Servidor Ktor iniciado em http://0.0.0.0:8080")
+    println("📡 Frontend disponível em http://0.0.0.0:8080/")
+    println("🔌 API disponível em http://0.0.0.0:8080/api/")
 }
 
